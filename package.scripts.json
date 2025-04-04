@@ -1,0 +1,11 @@
+
+{
+  "start": "vite",
+  "build": "tsc && vite build",
+  "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+  "preview": "vite preview",
+  "electron:serve": "cross-env IS_ELECTRON=true concurrently \"vite\" \"electron electron/main.js\"",
+  "electron:build": "cross-env IS_ELECTRON=true vite build && electron-builder",
+  "electron:pack": "electron-builder --dir",
+  "electron:dist": "electron-builder"
+}
