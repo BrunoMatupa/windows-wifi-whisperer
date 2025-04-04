@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { Network } from '@/components/NetworkList';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
+import { secureStorage } from '@/utils/secureStorage';
 
 // This is a mock implementation since we can't interact with actual 
 // Windows WiFi APIs in a browser environment
@@ -11,6 +12,7 @@ const useWifiNetworks = () => {
   const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [connectingNetwork, setConnectingNetwork] = useState<string | null>(null);
+  const [autoReconnect, setAutoReconnect] = useState<boolean>(true);
 
   // Mock data for demo purposes
   const mockNetworks: Network[] = [
@@ -67,10 +69,39 @@ const useWifiNetworks = () => {
     }
   ];
 
-  // Simulate initial scan
+  // Simulate initial scan and automatic reconnection
   useEffect(() => {
     scanNetworks();
-  }, []);
+    
+    // Attempt auto-reconnect to favorite networks
+    const autoConnect = () => {
+      if (!autoReconnect) return;
+      
+      const savedPasswords = secureStorage.getAllPasswords();
+      if (savedPasswords.length === 0) return;
+      
+      const networkToConnect = networks.find(network => 
+        network.favorite && 
+        savedPasswords.some(saved => saved.ssid === network.ssid) &&
+        !network.connected
+      );
+      
+      if (networkToConnect) {
+        toast.info(`Auto-connecting to ${networkToConnect.ssid}...`);
+        const password = secureStorage.getPassword(networkToConnect.ssid);
+        if (password) {
+          setTimeout(() => {
+            connectToNetwork(networkToConnect.ssid, password);
+          }, 1500);
+        }
+      }
+    };
+    
+    // Try auto-connect after networks are loaded
+    if (networks.length > 0 && !isScanning) {
+      autoConnect();
+    }
+  }, [isScanning, networks.length, autoReconnect]);
 
   const scanNetworks = () => {
     setIsScanning(true);
@@ -95,8 +126,7 @@ const useWifiNetworks = () => {
       });
       
       setIsScanning(false);
-      toast({
-        title: "Network Scan Complete",
+      toast.success("Network Scan Complete", {
         description: `Found ${mockNetworks.length} networks`
       });
     }, 2000);
@@ -113,8 +143,7 @@ const useWifiNetworks = () => {
     
     const network = networks.find(network => network.ssid === ssid);
     if (network) {
-      toast({
-        title: network.favorite ? "Removed from Favorites" : "Added to Favorites",
+      toast(network.favorite ? "Removed from Favorites" : "Added to Favorites", {
         description: `${ssid} has been ${network.favorite ? "removed from" : "added to"} your favorites`
       });
     }
@@ -127,7 +156,13 @@ const useWifiNetworks = () => {
     setSelectedNetwork(network);
     
     if (network.secured) {
-      setShowPasswordDialog(true);
+      // Check if we have a saved password
+      const savedPassword = secureStorage.getPassword(ssid);
+      if (savedPassword) {
+        connectToNetwork(ssid, savedPassword);
+      } else {
+        setShowPasswordDialog(true);
+      }
     } else {
       connectToNetwork(ssid, null);
     }
@@ -136,6 +171,11 @@ const useWifiNetworks = () => {
   const connectToNetwork = (ssid: string, password: string | null) => {
     setConnectingNetwork(ssid);
     setShowPasswordDialog(false);
+    
+    // If we have a password, save it for future auto-reconnect
+    if (password) {
+      secureStorage.savePassword(ssid, password);
+    }
     
     // Simulate connection delay
     setTimeout(() => {
@@ -150,8 +190,7 @@ const useWifiNetworks = () => {
       
       setConnectingNetwork(null);
       
-      toast({
-        title: "Connected Successfully",
+      toast.success("Connected Successfully", {
         description: `You're now connected to ${ssid}`
       });
     }, 1500);
@@ -165,10 +204,14 @@ const useWifiNetworks = () => {
       }))
     );
     
-    toast({
-      title: "Disconnected",
+    toast("Disconnected", {
       description: `You've disconnected from ${ssid}`
     });
+  };
+
+  const toggleAutoReconnect = () => {
+    setAutoReconnect(prev => !prev);
+    toast(autoReconnect ? "Auto-reconnect disabled" : "Auto-reconnect enabled");
   };
 
   return {
@@ -182,7 +225,9 @@ const useWifiNetworks = () => {
     selectedNetwork,
     showPasswordDialog,
     setShowPasswordDialog,
-    connectingNetwork
+    connectingNetwork,
+    autoReconnect,
+    toggleAutoReconnect
   };
 };
 

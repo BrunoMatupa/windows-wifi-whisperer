@@ -1,14 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { RefreshCw, WifiOff, Settings } from "lucide-react";
+import { RefreshCw, WifiOff, Settings, Key } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 
 import WiFiHeader from '@/components/WiFiHeader';
 import NetworkList from '@/components/NetworkList';
 import ConnectionDetails from '@/components/ConnectionDetails';
 import PasswordDialog from '@/components/PasswordDialog';
+import PasswordManager from '@/components/PasswordManager';
 import useWifiNetworks from '@/hooks/useWifiNetworks';
 
 const Index = () => {
@@ -22,9 +23,14 @@ const Index = () => {
     selectedNetwork,
     showPasswordDialog,
     setShowPasswordDialog,
-    connectingNetwork
+    connectingNetwork,
+    autoReconnect,
+    toggleAutoReconnect
   } = useWifiNetworks();
 
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [showPasswordManager, setShowPasswordManager] = useState(false);
+  
   const connectedNetwork = networks.find(network => network.connected) || null;
 
   return (
@@ -83,16 +89,37 @@ const Index = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center justify-between">
                     <span>Auto-connect to favorites</span>
-                    <input type="checkbox" defaultChecked className="toggle" />
+                    <input 
+                      type="checkbox" 
+                      checked={autoReconnect}
+                      onChange={toggleAutoReconnect}
+                      className="toggle" 
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Show password</span>
-                    <input type="checkbox" className="toggle" />
+                    <input 
+                      type="checkbox"
+                      checked={showPasswords}
+                      onChange={() => setShowPasswords(!showPasswords)}
+                      className="toggle" 
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Auto-scan networks</span>
                     <input type="checkbox" defaultChecked className="toggle" />
                   </div>
+                </div>
+                
+                <div className="mt-6">
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center gap-2"
+                    onClick={() => setShowPasswordManager(true)}
+                  >
+                    <Key className="h-4 w-4" />
+                    Manage Saved Passwords
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -108,6 +135,11 @@ const Index = () => {
               connectToNetwork(selectedNetwork.ssid, password);
             }
           }}
+        />
+        
+        <PasswordManager
+          isOpen={showPasswordManager}
+          onClose={() => setShowPasswordManager(false)}
         />
 
         {/* Modal for connecting state */}
