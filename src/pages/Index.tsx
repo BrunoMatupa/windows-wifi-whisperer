@@ -126,9 +126,12 @@ const Index = () => {
 
         <footer className="mt-12 text-center text-sm text-gray-500">
           <p>Windows WiFi Whisperer &copy; 2025</p>
-          <p className="text-xs mt-1">
+          <p className="text-xs mt-1 mb-2">
             For demonstration purposes only.
             In a real-world implementation, this app would interact with Windows APIs.
+          </p>
+          <p className="text-sm font-medium">
+            Created by Bruno Matutu | A brilliant idea brought to life
           </p>
         </footer>
 
