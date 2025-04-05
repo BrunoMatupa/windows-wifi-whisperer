@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Network } from '@/components/NetworkList';
 import { toast } from 'sonner';
@@ -19,6 +18,7 @@ const useWifiNetworks = () => {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [connectingNetwork, setConnectingNetwork] = useState<string | null>(null);
   const [autoReconnect, setAutoReconnect] = useState<boolean>(true);
+  const [savedPasswords, setSavedPasswords] = useState<StoredPassword[]>([]);
 
   const mockNetworks: Network[] = [
     {
@@ -141,66 +141,61 @@ const useWifiNetworks = () => {
   useEffect(() => {
     scanNetworks();
     
-    const autoConnect = async () => {
-      if (!autoReconnect) return;
-      
-      const tryConnectToSaved = async () => {
-        let savedPasswords: StoredPassword[] = [];
-        
-        try {
-          if (isElectron()) {
-            const result = await window.api.getAllPasswords();
-            if (result.success) {
-              savedPasswords = result.passwords;
-            }
-          } else {
-            savedPasswords = await secureStorage.getAllPasswords();
-          }
-          
-          if (savedPasswords.length === 0) return;
-          
-          const networkToConnect = networks.find(network => 
-            network.favorite && 
-            savedPasswords.some(saved => saved.ssid === network.ssid) &&
-            !network.connected
-          );
-          
-          if (networkToConnect) {
-            toast.info(`Auto-connecting to ${networkToConnect.ssid}...`);
-            
-            let password = null;
-            
-            if (isElectron()) {
-              try {
-                const result = await window.api.getPassword(networkToConnect.ssid);
-                if (result.success) {
-                  password = result.password;
-                }
-              } catch (error) {
-                console.error("Error getting password:", error);
-              }
-            } else {
-              password = await secureStorage.getPassword(networkToConnect.ssid);
-            }
-            
-            if (password) {
-              setTimeout(() => {
-                connectToNetwork(networkToConnect.ssid, password);
-              }, 1500);
-            }
-          }
-        } catch (error) {
-          console.error("Error in auto-connect:", error);
-        }
-      };
-      
-      if (networks.length > 0 && !isScanning) {
-        tryConnectToSaved();
+    const loadSavedPasswords = async () => {
+      try {
+        const passwords = await secureStorage.getAllPasswords();
+        setSavedPasswords(passwords);
+      } catch (error) {
+        console.error("Error loading saved passwords:", error);
+        setSavedPasswords([]);
       }
     };
     
-    autoConnect();
-  }, [isScanning, networks.length, autoReconnect]);
+    loadSavedPasswords();
+  }, []);
+
+  useEffect(() => {
+    if (!autoReconnect || isScanning || networks.length === 0 || savedPasswords.length === 0) return;
+    
+    const tryConnectToSaved = async () => {
+      try {
+        const networkToConnect = networks.find(network => 
+          network.favorite && 
+          savedPasswords.some(saved => saved.ssid === network.ssid) &&
+          !network.connected
+        );
+        
+        if (networkToConnect) {
+          toast.info(`Auto-connecting to ${networkToConnect.ssid}...`);
+          
+          let password = null;
+          
+          if (isElectron()) {
+            try {
+              const result = await window.api.getPassword(networkToConnect.ssid);
+              if (result.success) {
+                password = result.password;
+              }
+            } catch (error) {
+              console.error("Error getting password:", error);
+            }
+          } else {
+            password = await secureStorage.getPassword(networkToConnect.ssid);
+          }
+          
+          if (password) {
+            setTimeout(() => {
+              connectToNetwork(networkToConnect.ssid, password);
+            }, 1500);
+          }
+        }
+      } catch (error) {
+        console.error("Error in auto-connect:", error);
+      }
+    };
+    
+    tryConnectToSaved();
+  }, [isScanning, networks, savedPasswords, autoReconnect]);
 
   const toggleFavorite = (ssid: string) => {
     setNetworks(networks => 
@@ -260,15 +255,10 @@ const useWifiNetworks = () => {
     setShowPasswordDialog(false);
     
     if (password) {
-      if (isElectron()) {
-        try {
-          await window.api.storePassword(ssid, password);
-        } catch (error) {
-          console.error("Error storing password:", error);
-        }
-      } else {
-        await secureStorage.savePassword(ssid, password);
-      }
+      await secureStorage.savePassword(ssid, password);
+      
+      const updatedPasswords = await secureStorage.getAllPasswords();
+      setSavedPasswords(updatedPasswords);
     }
     
     try {

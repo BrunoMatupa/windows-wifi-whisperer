@@ -94,7 +94,15 @@ export const secureStorage = {
       if (isElectron()) {
         // Use Promise with Electron API
         const result = await window.api.getAllPasswords();
-        return result.success ? result.passwords : [];
+        if (result.success) {
+          // Ensure the result has the correct structure
+          return result.passwords.map((pwd: any) => ({
+            ssid: pwd.ssid,
+            password: pwd.password,
+            lastUsed: pwd.lastUsed || new Date().toISOString() // Ensure lastUsed exists
+          }));
+        }
+        return [];
       }
       
       // Fallback for web demo
@@ -105,7 +113,13 @@ export const secureStorage = {
       
       const decrypted = decrypt(storedData, key);
       try {
-        return JSON.parse(decrypted) as StoredPassword[];
+        const parsedPasswords = JSON.parse(decrypted);
+        // Ensure each item has the lastUsed property
+        return parsedPasswords.map((pwd: any) => ({
+          ssid: pwd.ssid,
+          password: pwd.password,
+          lastUsed: pwd.lastUsed || new Date().toISOString() // Set default if missing
+        }));
       } catch {
         return [];
       }
