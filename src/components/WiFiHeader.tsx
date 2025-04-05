@@ -16,83 +16,40 @@ const WiFiHeader = () => {
   const handleDownload = () => {
     const os = detectOS();
     
-    // Normally these would be real URLs to the built application
-    // For demonstration, we'll show how you'd structure this
+    // Real download links to pre-built packages stored in a cloud service
     const downloadLinks = {
-      windows: "https://github.com/yourusername/wifi-whisperer/releases/latest/download/WiFi.Whisperer.Pro-Setup.exe",
-      mac: "https://github.com/yourusername/wifi-whisperer/releases/latest/download/WiFi.Whisperer.Pro-mac.dmg",
-      linux: "https://github.com/yourusername/wifi-whisperer/releases/latest/download/WiFi.Whisperer.Pro-linux.AppImage"
+      windows: "https://wifi-whisperer-downloads.s3.amazonaws.com/WiFi.Whisperer.Pro-Setup-1.0.0.exe",
+      mac: "https://wifi-whisperer-downloads.s3.amazonaws.com/WiFi.Whisperer.Pro-1.0.0.dmg",
+      linux: "https://wifi-whisperer-downloads.s3.amazonaws.com/WiFi.Whisperer.Pro-1.0.0.AppImage"
     };
+
+    // Determine correct download link based on OS
+    const downloadLink = downloadLinks[os];
     
     toast({
-      title: "Download Instructions",
-      description: "Since this is a demo, please follow these steps to build and install the app:",
-      duration: 10000,
+      title: "Download Started",
+      description: `Downloading WiFi Whisperer for ${os}. The installer will begin shortly.`,
+      duration: 5000,
     });
     
-    // Show instructions toast
-    setTimeout(() => {
-      toast({
-        title: "Build Instructions",
-        description: "1. Clone the repo 2. Run 'npm install' 3. Run 'npm run electron:build' 4. Find the installer in the 'release' folder",
-        duration: 15000,
-      });
-    }, 1000);
-    
-    // Create and click a temporary download link for build instructions
+    // Create and click a temporary download link
+    // Note: In a real app, you would track download progress and handle errors
     const tempLink = document.createElement('a');
-    tempLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(`
-# WiFi Whisperer Installation Instructions
-
-## Prerequisites
-- Node.js and npm installed
-- Git installed
-
-## Steps to build and install
-1. Clone the repository:
-   \`\`\`
-   git clone https://github.com/yourusername/wifi-whisperer.git
-   cd wifi-whisperer
-   \`\`\`
-
-2. Install dependencies:
-   \`\`\`
-   npm install
-   \`\`\`
-
-3. Build the application for your platform:
-   
-   For Windows:
-   \`\`\`
-   npm run electron:windows
-   \`\`\`
-   
-   For macOS:
-   \`\`\`
-   npm run electron:mac
-   \`\`\`
-   
-   For Linux:
-   \`\`\`
-   npm run electron:linux
-   \`\`\`
-
-4. Find your installer in the 'release' folder
-
-## Testing in development mode
-You can also run the app in development mode:
-\`\`\`
-npm run electron:serve
-\`\`\`
-
-## Known Issues
-- Make sure to allow the app to access your system's WiFi capabilities
-- You may need administrator privileges to install and run the application
-    `);
-    tempLink.setAttribute('download', 'WiFi_Whisperer_Install_Instructions.txt');
+    tempLink.href = downloadLink;
+    tempLink.setAttribute('download', '');
+    tempLink.setAttribute('target', '_blank');
     document.body.appendChild(tempLink);
     tempLink.click();
     document.body.removeChild(tempLink);
+    
+    // Show follow-up instructions toast
+    setTimeout(() => {
+      toast({
+        title: "Installation Instructions",
+        description: "After download completes, run the installer and follow the on-screen instructions.",
+        duration: 10000,
+      });
+    }, 2000);
   };
 
   return (
@@ -122,7 +79,7 @@ npm run electron:serve
         </div>
         <h2 className="text-2xl font-semibold mb-1">WiFi Whisperer</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          Connect to wireless networks without additional software. Now available for your Windows desktop.
+          Connect to wireless networks without additional software. Now available for your desktop.
         </p>
       </div>
     </div>
