@@ -1,11 +1,16 @@
-
 import { useState, useEffect } from 'react';
 import { Network } from '@/components/NetworkList';
 import { toast } from 'sonner';
 import { secureStorage } from '@/utils/secureStorage';
 
-// This is a mock implementation since we can't interact with actual 
-// Windows WiFi APIs in a browser environment
+const isElectron = (): boolean => {
+  try {
+    return window.api && window.api.isElectron();
+  } catch (e) {
+    return false;
+  }
+};
+
 const useWifiNetworks = () => {
   const [networks, setNetworks] = useState<Network[]>([]);
   const [isScanning, setIsScanning] = useState(false);
@@ -14,7 +19,6 @@ const useWifiNetworks = () => {
   const [connectingNetwork, setConnectingNetwork] = useState<string | null>(null);
   const [autoReconnect, setAutoReconnect] = useState<boolean>(true);
 
-  // Mock data for demo purposes
   const mockNetworks: Network[] = [
     {
       ssid: 'Home_WiFi',
@@ -69,68 +73,133 @@ const useWifiNetworks = () => {
     }
   ];
 
-  // Simulate initial scan and automatic reconnection
+  const scanNetworks = async () => {
+    setIsScanning(true);
+    
+    try {
+      if (isElectron()) {
+        const result = await window.api.getWifiNetworks();
+        
+        if (result.success) {
+          setNetworks(prevNetworks => {
+            return result.networks.map((newNetwork: any) => {
+              const existingNetwork = prevNetworks.find(n => n.ssid === newNetwork.ssid);
+              return {
+                ...newNetwork,
+                favorite: existingNetwork?.favorite !== undefined ? 
+                  existingNetwork.favorite : newNetwork.favorite
+              };
+            });
+          });
+          
+          toast.success("Network Scan Complete", {
+            description: `Found ${result.networks.length} networks`
+          });
+        } else {
+          toast.error("Scan Failed", {
+            description: result.error || "Unknown error"
+          });
+          
+          setNetworks(mockNetworks);
+        }
+      } else {
+        setTimeout(() => {
+          const updatedNetworks = mockNetworks.map(network => ({
+            ...network,
+            signalStrength: Math.min(100, Math.max(0, network.signalStrength + Math.floor(Math.random() * 11) - 5))
+          }));
+          
+          setNetworks(networks => {
+            return updatedNetworks.map(newNetwork => {
+              const existingNetwork = networks.find(n => n.ssid === newNetwork.ssid);
+              return {
+                ...newNetwork,
+                connected: existingNetwork?.connected || false,
+                favorite: existingNetwork?.favorite !== undefined ? existingNetwork.favorite : newNetwork.favorite
+              };
+            });
+          });
+          
+          toast.success("Network Scan Complete", {
+            description: `Found ${mockNetworks.length} networks`
+          });
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Error scanning networks:", error);
+      toast.error("Scan Failed", {
+        description: "Could not scan for networks"
+      });
+      
+      setNetworks(mockNetworks);
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   useEffect(() => {
     scanNetworks();
     
-    // Attempt auto-reconnect to favorite networks
     const autoConnect = () => {
       if (!autoReconnect) return;
       
-      const savedPasswords = secureStorage.getAllPasswords();
-      if (savedPasswords.length === 0) return;
-      
-      const networkToConnect = networks.find(network => 
-        network.favorite && 
-        savedPasswords.some(saved => saved.ssid === network.ssid) &&
-        !network.connected
-      );
-      
-      if (networkToConnect) {
-        toast.info(`Auto-connecting to ${networkToConnect.ssid}...`);
-        const password = secureStorage.getPassword(networkToConnect.ssid);
-        if (password) {
-          setTimeout(() => {
-            connectToNetwork(networkToConnect.ssid, password);
-          }, 1500);
+      const tryConnectToSaved = async () => {
+        let savedPasswords: {ssid: string, password: string}[] = [];
+        
+        if (isElectron()) {
+          try {
+            const result = await window.api.getAllPasswords();
+            if (result.success) {
+              savedPasswords = result.passwords;
+            }
+          } catch (error) {
+            console.error("Error getting saved passwords:", error);
+          }
+        } else {
+          savedPasswords = secureStorage.getAllPasswords();
         }
+        
+        if (savedPasswords.length === 0) return;
+        
+        const networkToConnect = networks.find(network => 
+          network.favorite && 
+          savedPasswords.some(saved => saved.ssid === network.ssid) &&
+          !network.connected
+        );
+        
+        if (networkToConnect) {
+          toast.info(`Auto-connecting to ${networkToConnect.ssid}...`);
+          
+          let password = null;
+          
+          if (isElectron()) {
+            try {
+              const result = await window.api.getPassword(networkToConnect.ssid);
+              if (result.success) {
+                password = result.password;
+              }
+            } catch (error) {
+              console.error("Error getting password:", error);
+            }
+          } else {
+            password = secureStorage.getPassword(networkToConnect.ssid);
+          }
+          
+          if (password) {
+            setTimeout(() => {
+              connectToNetwork(networkToConnect.ssid, password);
+            }, 1500);
+          }
+        }
+      };
+      
+      if (networks.length > 0 && !isScanning) {
+        tryConnectToSaved();
       }
     };
     
-    // Try auto-connect after networks are loaded
-    if (networks.length > 0 && !isScanning) {
-      autoConnect();
-    }
+    autoConnect();
   }, [isScanning, networks.length, autoReconnect]);
-
-  const scanNetworks = () => {
-    setIsScanning(true);
-    // Simulate network scanning delay
-    setTimeout(() => {
-      // Randomize signal strengths a bit for realism
-      const updatedNetworks = mockNetworks.map(network => ({
-        ...network,
-        signalStrength: Math.min(100, Math.max(0, network.signalStrength + Math.floor(Math.random() * 11) - 5))
-      }));
-      
-      setNetworks(networks => {
-        // Preserve connected and favorite status from current state
-        return updatedNetworks.map(newNetwork => {
-          const existingNetwork = networks.find(n => n.ssid === newNetwork.ssid);
-          return {
-            ...newNetwork,
-            connected: existingNetwork?.connected || false,
-            favorite: existingNetwork?.favorite !== undefined ? existingNetwork.favorite : newNetwork.favorite
-          };
-        });
-      });
-      
-      setIsScanning(false);
-      toast.success("Network Scan Complete", {
-        description: `Found ${mockNetworks.length} networks`
-      });
-    }, 2000);
-  };
 
   const toggleFavorite = (ssid: string) => {
     setNetworks(networks => 
@@ -156,57 +225,136 @@ const useWifiNetworks = () => {
     setSelectedNetwork(network);
     
     if (network.secured) {
-      // Check if we have a saved password
-      const savedPassword = secureStorage.getPassword(ssid);
-      if (savedPassword) {
-        connectToNetwork(ssid, savedPassword);
-      } else {
-        setShowPasswordDialog(true);
-      }
+      const checkSavedPassword = async () => {
+        let savedPassword = null;
+        
+        if (isElectron()) {
+          try {
+            const result = await window.api.getPassword(ssid);
+            if (result.success) {
+              savedPassword = result.password;
+            }
+          } catch (error) {
+            console.error("Error getting password:", error);
+          }
+        } else {
+          savedPassword = secureStorage.getPassword(ssid);
+        }
+        
+        if (savedPassword) {
+          connectToNetwork(ssid, savedPassword);
+        } else {
+          setShowPasswordDialog(true);
+        }
+      };
+      
+      checkSavedPassword();
     } else {
       connectToNetwork(ssid, null);
     }
   };
   
-  const connectToNetwork = (ssid: string, password: string | null) => {
+  const connectToNetwork = async (ssid: string, password: string | null) => {
     setConnectingNetwork(ssid);
     setShowPasswordDialog(false);
     
-    // If we have a password, save it for future auto-reconnect
     if (password) {
-      secureStorage.savePassword(ssid, password);
+      if (isElectron()) {
+        try {
+          await window.api.storePassword(ssid, password);
+        } catch (error) {
+          console.error("Error storing password:", error);
+        }
+      } else {
+        secureStorage.savePassword(ssid, password);
+      }
     }
     
-    // Simulate connection delay
-    setTimeout(() => {
-      // In a real app, this would call Windows APIs to connect
-      setNetworks(networks => 
-        networks.map(network => ({
-          ...network,
-          connected: network.ssid === ssid ? true : false,
-          lastConnected: network.ssid === ssid ? new Date() : network.lastConnected
-        }))
-      );
-      
-      setConnectingNetwork(null);
-      
-      toast.success("Connected Successfully", {
-        description: `You're now connected to ${ssid}`
+    try {
+      if (isElectron()) {
+        const result = await window.api.connectToNetwork(ssid, password);
+        
+        if (result.success) {
+          setNetworks(networks => 
+            networks.map(network => ({
+              ...network,
+              connected: network.ssid === ssid ? true : false,
+              lastConnected: network.ssid === ssid ? new Date() : network.lastConnected
+            }))
+          );
+          
+          toast.success("Connected Successfully", {
+            description: `You're now connected to ${ssid}`
+          });
+        } else {
+          toast.error("Connection Failed", {
+            description: result.error || `Could not connect to ${ssid}`
+          });
+        }
+      } else {
+        setTimeout(() => {
+          setNetworks(networks => 
+            networks.map(network => ({
+              ...network,
+              connected: network.ssid === ssid ? true : false,
+              lastConnected: network.ssid === ssid ? new Date() : network.lastConnected
+            }))
+          );
+          
+          toast.success("Connected Successfully", {
+            description: `You're now connected to ${ssid}`
+          });
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Error connecting to network:", error);
+      toast.error("Connection Failed", {
+        description: `Could not connect to ${ssid}`
       });
-    }, 1500);
+    } finally {
+      setConnectingNetwork(null);
+    }
   };
 
-  const disconnectFromNetwork = (ssid: string) => {
-    setNetworks(networks => 
-      networks.map(network => ({
-        ...network,
-        connected: network.ssid === ssid ? false : network.connected
-      }))
-    );
-    
-    toast("Disconnected", {
-      description: `You've disconnected from ${ssid}`
-    });
+  const disconnectFromNetwork = async (ssid: string) => {
+    try {
+      if (isElectron()) {
+        const result = await window.api.disconnectFromNetwork(ssid);
+        
+        if (result.success) {
+          setNetworks(networks => 
+            networks.map(network => ({
+              ...network,
+              connected: network.ssid === ssid ? false : network.connected
+            }))
+          );
+          
+          toast("Disconnected", {
+            description: `You've disconnected from ${ssid}`
+          });
+        } else {
+          toast.error("Disconnect Failed", {
+            description: result.error || `Could not disconnect from ${ssid}`
+          });
+        }
+      } else {
+        setNetworks(networks => 
+          networks.map(network => ({
+            ...network,
+            connected: network.ssid === ssid ? false : network.connected
+          }))
+        );
+        
+        toast("Disconnected", {
+          description: `You've disconnected from ${ssid}`
+        });
+      }
+    } catch (error) {
+      console.error("Error disconnecting from network:", error);
+      toast.error("Disconnect Failed", {
+        description: `Could not disconnect from ${ssid}`
+      });
+    }
   };
 
   const toggleAutoReconnect = () => {

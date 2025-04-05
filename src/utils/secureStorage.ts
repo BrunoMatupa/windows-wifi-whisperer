@@ -1,16 +1,22 @@
 
-// This is an improved implementation of secure storage
-// In a real desktop app, it would use the Electron secure store or Windows Credential Manager
+// Secure storage utility for WiFi passwords
+// Uses Electron's keytar in desktop app, falls back to localStorage for web demo
 
-// Simple encryption (NOT FOR PRODUCTION USE)
+// Check if we're running in Electron
+const isElectron = (): boolean => {
+  try {
+    return window.api && window.api.isElectron();
+  } catch (e) {
+    return false;
+  }
+};
+
+// Simple encryption for web demo only (NOT FOR PRODUCTION)
 const encrypt = (text: string, key: string): string => {
-  // This is just a simple mock encryption for demo purposes
-  const encodedText = btoa(text);
-  return encodedText;
+  return btoa(text);
 };
 
 const decrypt = (encryptedText: string, key: string): string => {
-  // This is just a simple mock decryption for demo purposes
   try {
     return atob(encryptedText);
   } catch {
@@ -29,16 +35,6 @@ const getSecretKey = (): string => {
   return newKey;
 };
 
-// Check if we're running in Electron
-const isElectron = (): boolean => {
-  // Fixed the TypeScript error by checking for window.process existence first
-  return typeof window !== 'undefined' && 
-         typeof window.process !== 'undefined' && 
-         !!window.process && 
-         !!window.process.versions && 
-         !!window.process.versions.electron;
-};
-
 interface StoredPassword {
   ssid: string;
   password: string;
@@ -48,23 +44,22 @@ interface StoredPassword {
 export const secureStorage = {
   savePassword: (ssid: string, password: string): void => {
     try {
-      // In Electron, this would use a more secure method
-      const key = getSecretKey();
-      const storedPasswords = secureStorage.getAllPasswords();
-      
-      const updatedPasswords = storedPasswords.filter(p => p.ssid !== ssid);
-      updatedPasswords.push({
-        ssid,
-        password: encrypt(password, key),
-        lastUsed: new Date().toISOString()
-      });
-      
-      localStorage.setItem('wifi_passwords', encrypt(JSON.stringify(updatedPasswords), key));
-      
       if (isElectron()) {
-        console.log('In Electron, we would use the native secure storage instead of localStorage');
-        // In a real implementation we would use:
-        // window.api.storePassword(ssid, password);
+        // Use Electron's secure storage
+        window.api.storePassword(ssid, password);
+      } else {
+        // Fallback for web demo
+        const key = getSecretKey();
+        const storedPasswords = secureStorage.getAllPasswords();
+        
+        const updatedPasswords = storedPasswords.filter(p => p.ssid !== ssid);
+        updatedPasswords.push({
+          ssid,
+          password: encrypt(password, key),
+          lastUsed: new Date().toISOString()
+        });
+        
+        localStorage.setItem('wifi_passwords', encrypt(JSON.stringify(updatedPasswords), key));
       }
     } catch (error) {
       console.error("Error saving password:", error);
@@ -74,11 +69,13 @@ export const secureStorage = {
   getPassword: (ssid: string): string | null => {
     try {
       if (isElectron()) {
-        // This would be replaced with actual Electron IPC call
-        console.log('In Electron, we would retrieve from secure store instead');
-        // return window.api.getPassword(ssid);
+        // Use async/await with Promise conversion for Electron API
+        return window.api.getPassword(ssid)
+          .then((result: any) => result.success ? result.password : null)
+          .catch(() => null);
       }
       
+      // Fallback for web demo
       const storedPasswords = secureStorage.getAllPasswords();
       const networkPassword = storedPasswords.find(p => p.ssid === ssid);
       
@@ -96,11 +93,13 @@ export const secureStorage = {
   getAllPasswords: (): StoredPassword[] => {
     try {
       if (isElectron()) {
-        // This would be replaced with actual Electron IPC call
-        console.log('In Electron, we would retrieve from secure store instead');
-        // return window.api.getAllPasswords();
+        // Use async/await with Promise conversion for Electron API
+        return window.api.getAllPasswords()
+          .then((result: any) => result.success ? result.passwords : [])
+          .catch(() => []);
       }
       
+      // Fallback for web demo
       const key = getSecretKey();
       const storedData = localStorage.getItem('wifi_passwords');
       
@@ -117,12 +116,12 @@ export const secureStorage = {
   deletePassword: (ssid: string): void => {
     try {
       if (isElectron()) {
-        // This would be replaced with actual Electron IPC call
-        console.log('In Electron, we would delete from secure store instead');
-        // window.api.deletePassword(ssid);
-        // return;
+        // Use Electron's secure storage
+        window.api.deletePassword(ssid);
+        return;
       }
       
+      // Fallback for web demo
       const key = getSecretKey();
       const storedPasswords = secureStorage.getAllPasswords();
       const updatedPasswords = storedPasswords.filter(p => p.ssid !== ssid);

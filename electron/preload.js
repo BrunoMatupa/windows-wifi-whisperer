@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld(
     storePassword: (ssid, password) => ipcRenderer.invoke('store-password', ssid, password),
     getPassword: (ssid) => ipcRenderer.invoke('get-password', ssid),
     getAllPasswords: () => ipcRenderer.invoke('get-all-passwords'),
-    deletePassword: (ssid) => ipcRenderer.invoke('delete-password', ssid)
+    deletePassword: (ssid) => ipcRenderer.invoke('delete-password', ssid),
+    getCurrentNetwork: () => ipcRenderer.invoke('get-current-network'),
+    isElectron: () => true
   }
 );
