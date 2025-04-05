@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { secureStorage } from '@/utils/secureStorage';
+import { secureStorage, StoredPassword } from '@/utils/secureStorage';
 import { 
   Dialog,
   DialogContent,
@@ -37,13 +37,23 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ isOpen, onClose }) =>
     }
   };
   
-  const loadSavedPasswords = () => {
-    const allPasswords = secureStorage.getAllPasswords();
-    setSavedPasswords(allPasswords.map(p => ({
-      ssid: p.ssid,
-      password: secureStorage.getPassword(p.ssid) || "",
-      visible: false
-    })));
+  const loadSavedPasswords = async () => {
+    try {
+      const allPasswords = await secureStorage.getAllPasswords();
+      
+      const passwordsWithVisibility = await Promise.all(
+        allPasswords.map(async p => ({
+          ssid: p.ssid,
+          password: await secureStorage.getPassword(p.ssid) || "",
+          visible: false
+        }))
+      );
+      
+      setSavedPasswords(passwordsWithVisibility);
+    } catch (error) {
+      console.error("Error loading passwords:", error);
+      toast.error("Failed to load saved passwords");
+    }
   };
   
   const togglePasswordVisibility = (index: number) => {
@@ -54,10 +64,15 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ isOpen, onClose }) =>
     );
   };
   
-  const deletePassword = (ssid: string) => {
-    secureStorage.deletePassword(ssid);
-    setSavedPasswords(passwords => passwords.filter(p => p.ssid !== ssid));
-    toast.success(`Password for ${ssid} deleted`);
+  const deletePassword = async (ssid: string) => {
+    try {
+      await secureStorage.deletePassword(ssid);
+      setSavedPasswords(passwords => passwords.filter(p => p.ssid !== ssid));
+      toast.success(`Password for ${ssid} deleted`);
+    } catch (error) {
+      console.error("Error deleting password:", error);
+      toast.error("Failed to delete password");
+    }
   };
   
   const handleClose = () => {

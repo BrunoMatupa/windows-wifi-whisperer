@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { Network } from '@/components/NetworkList';
 import { toast } from 'sonner';
-import { secureStorage } from '@/utils/secureStorage';
+import { secureStorage, StoredPassword } from '@/utils/secureStorage';
 
 const isElectron = (): boolean => {
   try {
@@ -140,56 +141,56 @@ const useWifiNetworks = () => {
   useEffect(() => {
     scanNetworks();
     
-    const autoConnect = () => {
+    const autoConnect = async () => {
       if (!autoReconnect) return;
       
       const tryConnectToSaved = async () => {
-        let savedPasswords: {ssid: string, password: string}[] = [];
+        let savedPasswords: StoredPassword[] = [];
         
-        if (isElectron()) {
-          try {
+        try {
+          if (isElectron()) {
             const result = await window.api.getAllPasswords();
             if (result.success) {
               savedPasswords = result.passwords;
             }
-          } catch (error) {
-            console.error("Error getting saved passwords:", error);
-          }
-        } else {
-          savedPasswords = secureStorage.getAllPasswords();
-        }
-        
-        if (savedPasswords.length === 0) return;
-        
-        const networkToConnect = networks.find(network => 
-          network.favorite && 
-          savedPasswords.some(saved => saved.ssid === network.ssid) &&
-          !network.connected
-        );
-        
-        if (networkToConnect) {
-          toast.info(`Auto-connecting to ${networkToConnect.ssid}...`);
-          
-          let password = null;
-          
-          if (isElectron()) {
-            try {
-              const result = await window.api.getPassword(networkToConnect.ssid);
-              if (result.success) {
-                password = result.password;
-              }
-            } catch (error) {
-              console.error("Error getting password:", error);
-            }
           } else {
-            password = secureStorage.getPassword(networkToConnect.ssid);
+            savedPasswords = await secureStorage.getAllPasswords();
           }
           
-          if (password) {
-            setTimeout(() => {
-              connectToNetwork(networkToConnect.ssid, password);
-            }, 1500);
+          if (savedPasswords.length === 0) return;
+          
+          const networkToConnect = networks.find(network => 
+            network.favorite && 
+            savedPasswords.some(saved => saved.ssid === network.ssid) &&
+            !network.connected
+          );
+          
+          if (networkToConnect) {
+            toast.info(`Auto-connecting to ${networkToConnect.ssid}...`);
+            
+            let password = null;
+            
+            if (isElectron()) {
+              try {
+                const result = await window.api.getPassword(networkToConnect.ssid);
+                if (result.success) {
+                  password = result.password;
+                }
+              } catch (error) {
+                console.error("Error getting password:", error);
+              }
+            } else {
+              password = await secureStorage.getPassword(networkToConnect.ssid);
+            }
+            
+            if (password) {
+              setTimeout(() => {
+                connectToNetwork(networkToConnect.ssid, password);
+              }, 1500);
+            }
           }
+        } catch (error) {
+          console.error("Error in auto-connect:", error);
         }
       };
       
@@ -238,7 +239,7 @@ const useWifiNetworks = () => {
             console.error("Error getting password:", error);
           }
         } else {
-          savedPassword = secureStorage.getPassword(ssid);
+          savedPassword = await secureStorage.getPassword(ssid);
         }
         
         if (savedPassword) {
@@ -266,7 +267,7 @@ const useWifiNetworks = () => {
           console.error("Error storing password:", error);
         }
       } else {
-        secureStorage.savePassword(ssid, password);
+        await secureStorage.savePassword(ssid, password);
       }
     }
     

@@ -35,7 +35,7 @@ const getSecretKey = (): string => {
   return newKey;
 };
 
-interface StoredPassword {
+export interface StoredPassword {
   ssid: string;
   password: string;
   lastUsed: string;
@@ -104,7 +104,11 @@ export const secureStorage = {
       if (!storedData) return [];
       
       const decrypted = decrypt(storedData, key);
-      return JSON.parse(decrypted);
+      try {
+        return JSON.parse(decrypted) as StoredPassword[];
+      } catch {
+        return [];
+      }
     } catch (error) {
       console.error("Error getting all passwords:", error);
       return [];
