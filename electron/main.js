@@ -2,16 +2,23 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const isDev = process.env.NODE_ENV === 'development';
+const wifi = require('node-wifi'); // This would need to be installed
+const keytar = require('keytar'); // Secure credential storage
 
 let mainWindow;
+
+// Initialize WiFi module
+wifi.init({
+  iface: null // Use the first available WiFi interface
+});
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 900,
     height: 680,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false, // Security: Keep this false
+      contextIsolation: true, // Security: Keep this true
       preload: path.join(__dirname, 'preload.js')
     },
     icon: path.join(__dirname, '../public/favicon.ico')
@@ -51,9 +58,75 @@ app.on('activate', () => {
   }
 });
 
+// Application service name for keytar
+const SERVICE_NAME = 'WiFiWhisperer';
+
 // Handle IPC messages from the renderer process
 ipcMain.handle('get-wifi-networks', async () => {
-  // In a real app, this would use the native Node.js WiFi API
-  // For now, this is just a mock
-  return { success: true, message: 'This would return actual WiFi networks in a real implementation' };
+  try {
+    const networks = await wifi.scan();
+    return { success: true, networks };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('connect-to-network', async (event, ssid, password) => {
+  try {
+    await wifi.connect({ ssid, password });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('disconnect-from-network', async (event, ssid) => {
+  try {
+    await wifi.disconnect();
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Secure password storage using the system's credential manager
+ipcMain.handle('store-password', async (event, ssid, password) => {
+  try {
+    await keytar.setPassword(SERVICE_NAME, ssid, password);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('get-password', async (event, ssid) => {
+  try {
+    const password = await keytar.getPassword(SERVICE_NAME, ssid);
+    return { success: true, password };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('get-all-passwords', async () => {
+  try {
+    const credentials = await keytar.findCredentials(SERVICE_NAME);
+    const passwords = credentials.map(cred => ({
+      ssid: cred.account,
+      password: cred.password,
+      lastUsed: new Date().toISOString() // Note: This is a limitation, we don't store last used date
+    }));
+    return { success: true, passwords };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('delete-password', async (event, ssid) => {
+  try {
+    await keytar.deletePassword(SERVICE_NAME, ssid);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 });

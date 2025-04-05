@@ -30,8 +30,13 @@ const getSecretKey = (): string => {
 };
 
 // Check if we're running in Electron
-const isElectron = () => {
-  return window && window.process && window.process.type;
+const isElectron = (): boolean => {
+  // Fixed the TypeScript error by checking for window.process existence first
+  return typeof window !== 'undefined' && 
+         typeof window.process !== 'undefined' && 
+         !!window.process && 
+         !!window.process.versions && 
+         !!window.process.versions.electron;
 };
 
 interface StoredPassword {

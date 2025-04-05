@@ -1,6 +1,6 @@
 
 appId: "com.brunomatutu.wifiwhisperer"
-productName: "Windows WiFi Whisperer"
+productName: "Windows WiFi Whisperer Pro"
 copyright: "Copyright © 2025 Bruno Matutu"
 directories:
   output: "release/"
@@ -12,13 +12,29 @@ mac:
   category: "public.app-category.utilities"
   target: ["dmg"]
   icon: "public/favicon.ico"
+  artifactName: "${productName}-${version}.${ext}"
 win:
   target: ["nsis"]
   icon: "public/favicon.ico"
+  artifactName: "${productName}-${version}.${ext}"
 linux:
   target: ["AppImage", "deb"]
   category: "Utility"
   icon: "public/favicon.ico"
+  artifactName: "${productName}-${version}.${ext}"
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "WiFi Whisperer Pro"
+  license: "LICENSE.md"
+  artifactName: "${productName}-Setup-${version}.${ext}"
+  installerIcon: "public/favicon.ico"
+  uninstallerIcon: "public/favicon.ico"
+  installerHeaderIcon: "public/favicon.ico"
+
+# Add the dependencies to install
+electronDependencies:
+  - node-wifi
+  - keytar
