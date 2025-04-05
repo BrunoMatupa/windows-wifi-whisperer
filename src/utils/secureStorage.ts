@@ -42,15 +42,15 @@ interface StoredPassword {
 }
 
 export const secureStorage = {
-  savePassword: (ssid: string, password: string): void => {
+  savePassword: async (ssid: string, password: string): Promise<void> => {
     try {
       if (isElectron()) {
         // Use Electron's secure storage
-        window.api.storePassword(ssid, password);
+        await window.api.storePassword(ssid, password);
       } else {
         // Fallback for web demo
         const key = getSecretKey();
-        const storedPasswords = secureStorage.getAllPasswords();
+        const storedPasswords = await secureStorage.getAllPasswords();
         
         const updatedPasswords = storedPasswords.filter(p => p.ssid !== ssid);
         updatedPasswords.push({
@@ -66,17 +66,16 @@ export const secureStorage = {
     }
   },
   
-  getPassword: (ssid: string): string | null => {
+  getPassword: async (ssid: string): Promise<string | null> => {
     try {
       if (isElectron()) {
-        // Use async/await with Promise conversion for Electron API
-        return window.api.getPassword(ssid)
-          .then((result: any) => result.success ? result.password : null)
-          .catch(() => null);
+        // Use Promise with Electron API
+        const result = await window.api.getPassword(ssid);
+        return result.success ? result.password : null;
       }
       
       // Fallback for web demo
-      const storedPasswords = secureStorage.getAllPasswords();
+      const storedPasswords = await secureStorage.getAllPasswords();
       const networkPassword = storedPasswords.find(p => p.ssid === ssid);
       
       if (networkPassword) {
@@ -90,13 +89,12 @@ export const secureStorage = {
     }
   },
   
-  getAllPasswords: (): StoredPassword[] => {
+  getAllPasswords: async (): Promise<StoredPassword[]> => {
     try {
       if (isElectron()) {
-        // Use async/await with Promise conversion for Electron API
-        return window.api.getAllPasswords()
-          .then((result: any) => result.success ? result.passwords : [])
-          .catch(() => []);
+        // Use Promise with Electron API
+        const result = await window.api.getAllPasswords();
+        return result.success ? result.passwords : [];
       }
       
       // Fallback for web demo
@@ -113,17 +111,17 @@ export const secureStorage = {
     }
   },
   
-  deletePassword: (ssid: string): void => {
+  deletePassword: async (ssid: string): Promise<void> => {
     try {
       if (isElectron()) {
         // Use Electron's secure storage
-        window.api.deletePassword(ssid);
+        await window.api.deletePassword(ssid);
         return;
       }
       
       // Fallback for web demo
       const key = getSecretKey();
-      const storedPasswords = secureStorage.getAllPasswords();
+      const storedPasswords = await secureStorage.getAllPasswords();
       const updatedPasswords = storedPasswords.filter(p => p.ssid !== ssid);
       
       localStorage.setItem('wifi_passwords', encrypt(JSON.stringify(updatedPasswords), key));
