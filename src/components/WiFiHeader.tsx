@@ -1,15 +1,17 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Download, Monitor, Menu } from 'lucide-react';
+import { Download, Monitor, Menu, Phone } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 
 const WiFiHeader = () => {
   // Function to determine the user's operating system
   const detectOS = () => {
-    if (navigator.userAgent.indexOf("Win") !== -1) return "windows";
-    if (navigator.userAgent.indexOf("Mac") !== -1) return "mac";
-    if (navigator.userAgent.indexOf("Linux") !== -1) return "linux";
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (userAgent.indexOf("android") !== -1) return "android";
+    if (userAgent.indexOf("win") !== -1) return "windows";
+    if (userAgent.indexOf("mac") !== -1) return "mac";
+    if (userAgent.indexOf("linux") !== -1) return "linux";
     return "windows"; // Default to Windows if unable to detect
   };
 
@@ -21,6 +23,7 @@ const WiFiHeader = () => {
     
     // Local file paths to the installers that would be available after building
     const downloadLinks = {
+      android: `${baseUrl}/installers/WiFi.Whisperer.Pro-1.0.0.apk`,
       windows: `${baseUrl}/installers/WiFi.Whisperer.Pro-Setup-1.0.0.exe`,
       mac: `${baseUrl}/installers/WiFi.Whisperer.Pro-1.0.0.dmg`,
       linux: `${baseUrl}/installers/WiFi.Whisperer.Pro-1.0.0.AppImage`
@@ -62,8 +65,15 @@ const WiFiHeader = () => {
   
   // Helper function to show OS-specific installation instructions
   const handlePostDownloadMessage = (os) => {
-    // For Windows, show auto-installation message
-    if (os === "windows") {
+    if (os === "android") {
+      setTimeout(() => {
+        toast({
+          title: "Android Installation",
+          description: "Once download completes, tap the APK file to install. You may need to enable 'Install from Unknown Sources' in your settings.",
+          duration: 6000,
+        });
+      }, 2000);
+    } else if (os === "windows") {
       setTimeout(() => {
         toast({
           title: "Installation Started",
@@ -119,7 +129,7 @@ const WiFiHeader = () => {
         </div>
         <h2 className="text-2xl font-semibold mb-1">WiFi Whisperer</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          Connect to wireless networks without additional software. One-click installation for your desktop.
+          Connect to wireless networks without additional software. One-click installation for your desktop or mobile device.
         </p>
       </div>
     </div>

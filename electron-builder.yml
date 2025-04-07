@@ -46,3 +46,8 @@ nsis:
 electronDependencies:
   - node-wifi
   - keytar
+
+# Mobile builds
+mobile:
+  android:
+    output: "release/android"
