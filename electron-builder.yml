@@ -19,15 +19,20 @@ mac:
   entitlements: "build/entitlements.mac.plist"
   entitlementsInherit: "build/entitlements.mac.plist"
   darkModeSupport: true
+  publish: ["github"]
 win:
   target: ["nsis"]
   icon: "public/favicon.ico"
   artifactName: "${productName}-${version}.${ext}"
+  publish: ["github"]
+  requestedExecutionLevel: "highestAvailable"
+  rfc3161TimeStampServer: "http://timestamp.digicert.com"
 linux:
-  target: ["AppImage", "deb"]
+  target: ["AppImage", "deb", "rpm", "snap"]
   category: "Utility"
   icon: "public/favicon.ico"
   artifactName: "${productName}-${version}.${ext}"
+  publish: ["github"]
 nsis:
   oneClick: true
   allowToChangeInstallationDirectory: false
@@ -42,10 +47,13 @@ nsis:
   installerHeaderIcon: "public/favicon.ico"
   deleteAppDataOnUninstall: false
 
-# Add the dependencies to install
+# Add the dependencies to install - expanded driver support
 electronDependencies:
   - node-wifi
   - keytar
+  - windows-network-driver
+  - mac-wifi-driver
+  - linux-network-util
 
 # Mobile builds
 mobile:

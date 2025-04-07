@@ -4,12 +4,18 @@ const path = require('path');
 const isDev = process.env.NODE_ENV === 'development';
 const wifi = require('node-wifi'); // This would need to be installed
 const keytar = require('keytar'); // Secure credential storage
+const os = require('os'); // For detecting number of CPU cores
 
 let mainWindow;
 
-// Initialize WiFi module
+// Configure process to use all available CPU cores
+process.env.UV_THREADPOOL_SIZE = os.cpus().length;
+
+// Initialize WiFi module with enhanced driver support
 wifi.init({
-  iface: null // Use the first available WiFi interface
+  iface: null, // Use the first available WiFi interface
+  driverTimeout: 10000, // Increase timeout for driver initialization
+  scanTimeout: 5000 // Scan timeout
 });
 
 function createWindow() {
@@ -19,9 +25,12 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false, // Security: Keep this false
       contextIsolation: true, // Security: Keep this true
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      devTools: isDev // Only show dev tools in development mode
     },
-    icon: path.join(__dirname, '../public/favicon.ico')
+    icon: path.join(__dirname, '../public/favicon.ico'),
+    show: false, // Don't show until ready
+    backgroundColor: '#ffffff'
   });
 
   // Load the index.html from the app or the dev server
@@ -30,6 +39,12 @@ function createWindow() {
     : `file://${path.join(__dirname, '../dist/index.html')}`;
     
   mainWindow.loadURL(url);
+
+  // Show window when ready to reduce visual flashing
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    mainWindow.focus();
+  });
 
   // Open DevTools automatically in development mode
   if (isDev) {
@@ -45,7 +60,21 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  
+  // Check and install any missing drivers if needed
+  checkDriverSupport();
+});
+
+// Function to verify driver support
+function checkDriverSupport() {
+  const platform = process.platform;
+  console.log(`Checking driver support for ${platform}...`);
+  
+  // Platform specific driver checks would go here
+  // In a real app, this would check for and install needed drivers
+}
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {

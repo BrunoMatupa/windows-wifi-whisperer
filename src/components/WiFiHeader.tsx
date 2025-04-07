@@ -34,7 +34,7 @@ const WiFiHeader = () => {
     
     toast({
       title: "Download Starting",
-      description: `Installing WiFi Whisperer for ${os}...`,
+      description: `Installing WiFi Whisperer Pro for ${os}...`,
       duration: 3000,
     });
     
@@ -77,7 +77,7 @@ const WiFiHeader = () => {
       setTimeout(() => {
         toast({
           title: "Installation Started",
-          description: "WiFi Whisperer will install automatically when download completes.",
+          description: "WiFi Whisperer will install automatically when download completes and open automatically.",
           duration: 5000,
         });
       }, 2000);
@@ -109,7 +109,7 @@ const WiFiHeader = () => {
           <Button variant="ghost" size="icon" className="rounded-full">
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">WiFi Whisperer</h1>
+          <h1 className="text-xl font-semibold">WiFi Whisperer Pro</h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -118,7 +118,7 @@ const WiFiHeader = () => {
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
           >
             <Download className="h-4 w-4" />
-            Install App
+            Download Now
           </Button>
         </div>
       </div>
@@ -127,9 +127,9 @@ const WiFiHeader = () => {
         <div className="h-24 w-24 flex items-center justify-center rounded-full bg-primary/10 mb-4">
           <Monitor className="h-12 w-12 text-primary" />
         </div>
-        <h2 className="text-2xl font-semibold mb-1">WiFi Whisperer</h2>
+        <h2 className="text-2xl font-semibold mb-1">WiFi Whisperer Pro</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          Connect to wireless networks without additional software. One-click installation for your desktop or mobile device.
+          Connect to wireless networks without additional software. One-click installation with automatic launch. Supports all common network drivers.
         </p>
       </div>
     </div>

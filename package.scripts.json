@@ -16,5 +16,6 @@
   "cap:sync": "npx cap sync",
   "cap:build:android": "npx cap open android",
   "cap:build:apk": "cd android && ./gradlew assembleDebug && cd ..",
-  "android:build": "npm run build && npm run cap:sync && npm run cap:build:apk"
+  "android:build": "npm run build && npm run cap:sync && npm run cap:build:apk",
+  "quick-build": "npm run build && npm run electron:dist"
 }
