@@ -18,87 +18,74 @@ const WiFiHeader = () => {
   const handleDownload = () => {
     const os = detectOS();
     
-    // Build the base URL for where our app is hosted
-    const baseUrl = window.location.origin;
-    
-    // Local file paths to the installers that would be available after building
-    const downloadLinks = {
-      android: `${baseUrl}/installers/WiFi.Whisperer.Pro-1.0.0.apk`,
-      windows: `${baseUrl}/installers/WiFi.Whisperer.Pro-Setup-1.0.0.exe`,
-      mac: `${baseUrl}/installers/WiFi.Whisperer.Pro-1.0.0.dmg`,
-      linux: `${baseUrl}/installers/WiFi.Whisperer.Pro-1.0.0.AppImage`
+    // Build download path for the specific OS installer
+    const getDownloadPath = () => {
+      // In development, we'll use placeholder files from /public/installers
+      // In production with Electron, these files would be in the app's resources
+      if (os === 'android') {
+        return '/installers/WiFi.Whisperer.Pro-1.0.0.apk';
+      } else if (os === 'windows') {
+        return '/installers/WiFi.Whisperer.Pro-Setup-1.0.0.exe';
+      } else if (os === 'mac') {
+        return '/installers/WiFi.Whisperer.Pro-1.0.0.dmg';
+      } else if (os === 'linux') {
+        return '/installers/WiFi.Whisperer.Pro-1.0.0.AppImage';
+      }
+      return '/installers/WiFi.Whisperer.Pro-Setup-1.0.0.exe'; // Default to Windows
     };
-
-    // Determine correct download link based on OS
-    const downloadLink = downloadLinks[os];
+    
+    const downloadPath = getDownloadPath();
     
     toast({
       title: "Download Starting",
       description: `Installing WiFi Whisperer Pro for ${os}...`,
       duration: 3000,
     });
-    
-    // In development environment, show a toast explaining that downloads are simulated
-    if (process.env.NODE_ENV === 'development') {
-      toast({
-        title: "Development Mode",
-        description: "This is a development environment. In production, this would download the actual installer.",
-        duration: 5000,
-      });
-      
-      // Still trigger the OS-specific follow-up messages
-      handlePostDownloadMessage(os);
-      return;
-    }
+
+    console.log(`Downloading from path: ${downloadPath}`);
     
     // Create and click a temporary download link
     const tempLink = document.createElement('a');
-    tempLink.href = downloadLink;
+    tempLink.href = downloadPath;
     tempLink.setAttribute('download', '');
-    tempLink.setAttribute('target', '_blank');
     document.body.appendChild(tempLink);
     tempLink.click();
     document.body.removeChild(tempLink);
     
-    handlePostDownloadMessage(os);
+    // Add a delay before showing installation instruction to ensure download starts
+    setTimeout(() => {
+      handlePostDownloadMessage(os);
+    }, 1500);
   };
   
   // Helper function to show OS-specific installation instructions
   const handlePostDownloadMessage = (os) => {
     if (os === "android") {
-      setTimeout(() => {
-        toast({
-          title: "Android Installation",
-          description: "Once download completes, tap the APK file to install. You may need to enable 'Install from Unknown Sources' in your settings.",
-          duration: 6000,
-        });
-      }, 2000);
+      toast({
+        title: "Android Installation",
+        description: "Once download completes, tap the APK file to install. You may need to enable 'Install from Unknown Sources' in your settings.",
+        duration: 6000,
+      });
     } else if (os === "windows") {
-      setTimeout(() => {
-        toast({
-          title: "Installation Started",
-          description: "WiFi Whisperer will install automatically when download completes and open automatically.",
-          duration: 5000,
-        });
-      }, 2000);
+      toast({
+        title: "Installation Started",
+        description: "WiFi Whisperer will install automatically when download completes and open automatically.",
+        duration: 5000,
+      });
     } else if (os === "mac") {
       // For Mac, show DMG mounting instructions
-      setTimeout(() => {
-        toast({
-          title: "Installation",
-          description: "When download completes, open the DMG file and drag WiFi Whisperer to Applications.",
-          duration: 5000,
-        });
-      }, 2000);
+      toast({
+        title: "Installation",
+        description: "When download completes, open the DMG file and drag WiFi Whisperer to Applications.",
+        duration: 5000,
+      });
     } else {
       // For Linux
-      setTimeout(() => {
-        toast({
-          title: "Installation",
-          description: "When download completes, make the AppImage executable and run it.",
-          duration: 5000,
-        });
-      }, 2000);
+      toast({
+        title: "Installation",
+        description: "When download completes, make the AppImage executable and run it.",
+        duration: 5000,
+      });
     }
   };
 
