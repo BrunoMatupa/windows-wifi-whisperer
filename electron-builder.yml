@@ -1,6 +1,6 @@
 
 appId: "com.brunomatutu.wifiwhisperer"
-productName: "Windows WiFi Whisperer Pro"
+productName: "WiFi Whisperer Pro"
 copyright: "Copyright © 2025 Bruno Matutu"
 directories:
   output: "release/"
@@ -13,6 +13,11 @@ mac:
   target: ["dmg"]
   icon: "public/favicon.ico"
   artifactName: "${productName}-${version}.${ext}"
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: "build/entitlements.mac.plist"
+  entitlementsInherit: "build/entitlements.mac.plist"
+  darkModeSupport: true
 win:
   target: ["nsis"]
   icon: "public/favicon.ico"
@@ -23,16 +28,18 @@ linux:
   icon: "public/favicon.ico"
   artifactName: "${productName}-${version}.${ext}"
 nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
+  oneClick: true
+  allowToChangeInstallationDirectory: false
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: "WiFi Whisperer Pro"
   license: "LICENSE.md"
+  runAfterFinish: true
   artifactName: "${productName}-Setup-${version}.${ext}"
   installerIcon: "public/favicon.ico"
   uninstallerIcon: "public/favicon.ico"
   installerHeaderIcon: "public/favicon.ico"
+  deleteAppDataOnUninstall: false
 
 # Add the dependencies to install
 electronDependencies:

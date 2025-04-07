@@ -27,13 +27,12 @@ const WiFiHeader = () => {
     const downloadLink = downloadLinks[os];
     
     toast({
-      title: "Download Started",
-      description: `Downloading WiFi Whisperer for ${os}. The installer will begin shortly.`,
-      duration: 5000,
+      title: "Download Starting",
+      description: `Installing WiFi Whisperer for ${os}...`,
+      duration: 3000,
     });
     
     // Create and click a temporary download link
-    // Note: In a real app, you would track download progress and handle errors
     const tempLink = document.createElement('a');
     tempLink.href = downloadLink;
     tempLink.setAttribute('download', '');
@@ -42,14 +41,34 @@ const WiFiHeader = () => {
     tempLink.click();
     document.body.removeChild(tempLink);
     
-    // Show follow-up instructions toast
-    setTimeout(() => {
-      toast({
-        title: "Installation Instructions",
-        description: "After download completes, run the installer and follow the on-screen instructions.",
-        duration: 10000,
-      });
-    }, 2000);
+    // For Windows, show auto-installation message
+    if (os === "windows") {
+      setTimeout(() => {
+        toast({
+          title: "Installation Started",
+          description: "WiFi Whisperer will install automatically when download completes.",
+          duration: 5000,
+        });
+      }, 2000);
+    } else if (os === "mac") {
+      // For Mac, show DMG mounting instructions
+      setTimeout(() => {
+        toast({
+          title: "Installation",
+          description: "When download completes, open the DMG file and drag WiFi Whisperer to Applications.",
+          duration: 5000,
+        });
+      }, 2000);
+    } else {
+      // For Linux
+      setTimeout(() => {
+        toast({
+          title: "Installation",
+          description: "When download completes, make the AppImage executable and run it.",
+          duration: 5000,
+        });
+      }, 2000);
+    }
   };
 
   return (
@@ -65,10 +84,10 @@ const WiFiHeader = () => {
         <div className="flex items-center gap-2">
           <Button 
             onClick={handleDownload}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
           >
             <Download className="h-4 w-4" />
-            Download for Desktop
+            Install App
           </Button>
         </div>
       </div>
@@ -79,7 +98,7 @@ const WiFiHeader = () => {
         </div>
         <h2 className="text-2xl font-semibold mb-1">WiFi Whisperer</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          Connect to wireless networks without additional software. Now available for your desktop.
+          Connect to wireless networks without additional software. One-click installation for your desktop.
         </p>
       </div>
     </div>
