@@ -16,11 +16,14 @@ const WiFiHeader = () => {
   const handleDownload = () => {
     const os = detectOS();
     
-    // Real download links to pre-built packages stored in a cloud service
+    // Build the base URL for where our app is hosted
+    const baseUrl = window.location.origin;
+    
+    // Local file paths to the installers that would be available after building
     const downloadLinks = {
-      windows: "https://wifi-whisperer-downloads.s3.amazonaws.com/WiFi.Whisperer.Pro-Setup-1.0.0.exe",
-      mac: "https://wifi-whisperer-downloads.s3.amazonaws.com/WiFi.Whisperer.Pro-1.0.0.dmg",
-      linux: "https://wifi-whisperer-downloads.s3.amazonaws.com/WiFi.Whisperer.Pro-1.0.0.AppImage"
+      windows: `${baseUrl}/installers/WiFi.Whisperer.Pro-Setup-1.0.0.exe`,
+      mac: `${baseUrl}/installers/WiFi.Whisperer.Pro-1.0.0.dmg`,
+      linux: `${baseUrl}/installers/WiFi.Whisperer.Pro-1.0.0.AppImage`
     };
 
     // Determine correct download link based on OS
@@ -32,6 +35,19 @@ const WiFiHeader = () => {
       duration: 3000,
     });
     
+    // In development environment, show a toast explaining that downloads are simulated
+    if (process.env.NODE_ENV === 'development') {
+      toast({
+        title: "Development Mode",
+        description: "This is a development environment. In production, this would download the actual installer.",
+        duration: 5000,
+      });
+      
+      // Still trigger the OS-specific follow-up messages
+      handlePostDownloadMessage(os);
+      return;
+    }
+    
     // Create and click a temporary download link
     const tempLink = document.createElement('a');
     tempLink.href = downloadLink;
@@ -41,6 +57,11 @@ const WiFiHeader = () => {
     tempLink.click();
     document.body.removeChild(tempLink);
     
+    handlePostDownloadMessage(os);
+  };
+  
+  // Helper function to show OS-specific installation instructions
+  const handlePostDownloadMessage = (os) => {
     // For Windows, show auto-installation message
     if (os === "windows") {
       setTimeout(() => {

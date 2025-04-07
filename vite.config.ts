@@ -21,4 +21,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
   base: process.env.IS_ELECTRON === 'true' ? './' : '/',
+  // Ensure public directory files are copied to output
+  publicDir: 'public',
 }));

@@ -8,6 +8,7 @@ directories:
 files:
   - "dist/**/*"
   - "electron/**/*"
+  - "public/installers/*"
 mac:
   category: "public.app-category.utilities"
   target: ["dmg"]
