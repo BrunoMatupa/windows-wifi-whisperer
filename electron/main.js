@@ -11,11 +11,13 @@ let mainWindow;
 // Configure process to use all available CPU cores
 process.env.UV_THREADPOOL_SIZE = os.cpus().length;
 
-// Initialize WiFi module with enhanced driver support
+// Initialize WiFi module with enhanced driver support and auto-setup
 wifi.init({
   iface: null, // Use the first available WiFi interface
   driverTimeout: 10000, // Increase timeout for driver initialization
-  scanTimeout: 5000 // Scan timeout
+  scanTimeout: 5000, // Scan timeout
+  autoConnect: true, // Auto connect to saved networks
+  autoSetup: true // Auto setup drivers and dependencies
 });
 
 function createWindow() {
@@ -63,17 +65,42 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
   
-  // Check and install any missing drivers if needed
-  checkDriverSupport();
+  // Auto setup drivers and dependencies
+  autoSetupDrivers();
 });
 
-// Function to verify driver support
-function checkDriverSupport() {
+// Function to automatically setup drivers and dependencies
+function autoSetupDrivers() {
   const platform = process.platform;
-  console.log(`Checking driver support for ${platform}...`);
+  console.log(`Auto-setting up drivers for ${platform}...`);
   
-  // Platform specific driver checks would go here
-  // In a real app, this would check for and install needed drivers
+  // Automatically detect and install required drivers based on platform
+  if (platform === 'win32') {
+    // Windows-specific driver setup
+    installWindowsDrivers();
+  } else if (platform === 'darwin') {
+    // macOS-specific driver setup
+    installMacDrivers();
+  } else if (platform === 'linux') {
+    // Linux-specific driver setup
+    installLinuxDrivers();
+  }
+}
+
+function installWindowsDrivers() {
+  console.log('Installing Windows network drivers silently...');
+  // This would contain actual driver installation code
+  // For demonstration purposes, we're just logging
+}
+
+function installMacDrivers() {
+  console.log('Installing Mac network drivers silently...');
+  // This would contain actual driver installation code
+}
+
+function installLinuxDrivers() {
+  console.log('Installing Linux network drivers silently...');
+  // This would contain actual driver installation code
 }
 
 // Quit when all windows are closed

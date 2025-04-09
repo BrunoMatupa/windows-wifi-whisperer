@@ -41,7 +41,9 @@ export default defineConfig(({ mode }) => ({
     sourcemap: true,
     // Ensure installers are copied to output
     assetsDir: 'assets',
-    copyPublicDir: true
+    copyPublicDir: true,
+    // Make sure installer files are properly handled
+    emptyOutDir: false
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom']

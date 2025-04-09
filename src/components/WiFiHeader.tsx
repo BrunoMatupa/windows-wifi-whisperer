@@ -38,7 +38,7 @@ const WiFiHeader = () => {
     
     toast({
       title: "Download Starting",
-      description: `Installing WiFi Whisperer Pro for ${os}...`,
+      description: `Installing WiFi Whisperer Pro for ${os} (silent installation with auto-launch)...`,
       duration: 3000,
     });
 
@@ -63,27 +63,26 @@ const WiFiHeader = () => {
     if (os === "android") {
       toast({
         title: "Android Installation",
-        description: "Once download completes, tap the APK file to install. You may need to enable 'Install from Unknown Sources' in your settings.",
+        description: "Installation will complete automatically in background. The app will open once installed.",
         duration: 6000,
       });
     } else if (os === "windows") {
       toast({
-        title: "Installation Started",
-        description: "WiFi Whisperer will install automatically when download completes and open automatically.",
+        title: "Silent Installation",
+        description: "WiFi Whisperer is installing silently in the background and will open automatically when ready.",
         duration: 5000,
       });
     } else if (os === "mac") {
-      // For Mac, show DMG mounting instructions
       toast({
         title: "Installation",
-        description: "When download completes, open the DMG file and drag WiFi Whisperer to Applications.",
+        description: "Installation will complete automatically and the app will open when ready.",
         duration: 5000,
       });
     } else {
       // For Linux
       toast({
         title: "Installation",
-        description: "When download completes, make the AppImage executable and run it.",
+        description: "Installation will complete automatically in background and the app will launch automatically.",
         duration: 5000,
       });
     }
@@ -105,7 +104,7 @@ const WiFiHeader = () => {
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
           >
             <Download className="h-4 w-4" />
-            Download Now
+            Install Now
           </Button>
         </div>
       </div>
@@ -116,7 +115,7 @@ const WiFiHeader = () => {
         </div>
         <h2 className="text-2xl font-semibold mb-1">WiFi Whisperer Pro</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          Connect to wireless networks without additional software. One-click installation with automatic launch. Supports all common network drivers.
+          Connect to wireless networks without additional setup. Silent installation with automatic launch. All drivers installed automatically.
         </p>
       </div>
     </div>

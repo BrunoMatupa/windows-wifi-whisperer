@@ -27,6 +27,7 @@ win:
   publish: ["github"]
   requestedExecutionLevel: "highestAvailable"
   rfc3161TimeStampServer: "http://timestamp.digicert.com"
+  silentInstall: true
 linux:
   target: ["AppImage", "deb", "rpm", "snap"]
   category: "Utility"
@@ -46,6 +47,8 @@ nsis:
   uninstallerIcon: "public/favicon.ico"
   installerHeaderIcon: "public/favicon.ico"
   deleteAppDataOnUninstall: false
+  perMachine: true
+  silentRun: true
 
 # Add the dependencies to install - expanded driver support
 electronDependencies:
@@ -55,7 +58,14 @@ electronDependencies:
   - mac-wifi-driver
   - linux-network-util
 
+# Silent installation options
+silentInstallation:
+  enabled: true
+  autoLaunch: true
+  background: true
+
 # Mobile builds
 mobile:
   android:
     output: "release/android"
+    autoInstall: true
