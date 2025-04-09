@@ -1,3 +1,4 @@
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -34,6 +35,31 @@ npm i
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+```
+
+## Installation on Kali Linux
+
+WiFi Whisperer Pro can be easily installed on Kali Linux. Follow these steps:
+
+```sh
+# Clone the repository
+git clone https://github.com/your-username/wifi-whisperer-pro.git
+
+# Navigate to the project directory
+cd wifi-whisperer-pro
+
+# Install dependencies
+npm install
+
+# Build the application
+npm run build
+
+# Install the compiled application
+sudo npm run install-linux
+
+# After installation, the application will automatically start
+# To launch it manually in the future, use:
+wifi-whisperer-pro
 ```
 
 **Edit a file directly in GitHub**
