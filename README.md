@@ -1,5 +1,6 @@
 
 
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -26,7 +27,7 @@ Follow these steps:
 
 ```sh
 # Step 1: Clone the repository using the project's Git URL.
-git clone https://github.com/lovabledev/00024f68-4223-45d0-8094-878b30279412.git wifi-whisperer-pro
+git clone https://github.com/lovabledev/wifi-whisperer-pro.git wifi-whisperer-pro
 
 # Step 2: Navigate to the project directory.
 cd wifi-whisperer-pro
@@ -46,7 +47,7 @@ WiFi Whisperer Pro supports one-click installation for all major platforms. Simp
 
 ```sh
 # Clone the repository directly to your desktop
-git clone https://github.com/lovabledev/00024f68-4223-45d0-8094-878b30279412.git ~/Desktop/wifi-whisperer-pro
+git clone https://github.com/lovabledev/wifi-whisperer-pro.git ~/Desktop/wifi-whisperer-pro
 
 # Navigate to the project directory
 cd ~/Desktop/wifi-whisperer-pro
@@ -74,7 +75,7 @@ WiFi Whisperer Pro can be easily installed on Kali Linux. Follow these steps:
 
 ```sh
 # Clone the repository
-git clone https://github.com/lovabledev/00024f68-4223-45d0-8094-878b30279412.git wifi-whisperer-pro
+git clone https://github.com/lovabledev/wifi-whisperer-pro.git wifi-whisperer-pro
 
 # Navigate to the project directory
 cd wifi-whisperer-pro

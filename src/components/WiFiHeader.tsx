@@ -18,13 +18,14 @@ const WiFiHeader = () => {
   const handleDownload = () => {
     const os = detectOS();
     
-    // Direct install URL - this would be the GitHub or distribution URL
-    const directInstallUrl = "https://github.com/lovabledev/00024f68-4223-45d0-8094-878b30279412";
+    // Use the repository name instead of full URL
+    const repoName = "wifi-whisperer-pro";
+    const directInstallUrl = "https://github.com/lovabledev/wifi-whisperer-pro";
     
     // Show toast for installation process starting
     toast({
       title: "One-Click Installation",
-      description: `Adding source and starting installation for ${os}. Please check your desktop when complete.`,
+      description: `Adding ${repoName} as a source and starting installation for ${os}. Please check your desktop when complete.`,
       duration: 5000,
     });
     
@@ -46,7 +47,7 @@ const WiFiHeader = () => {
     
     // Add a delay before showing installation instruction
     setTimeout(() => {
-      handlePostDownloadMessage(os, directInstallUrl);
+      handlePostDownloadMessage(os, repoName);
     }, 1500);
   };
 
@@ -65,7 +66,7 @@ const WiFiHeader = () => {
   };
   
   // Helper function to show OS-specific installation instructions
-  const handlePostDownloadMessage = (os, sourceUrl) => {
+  const handlePostDownloadMessage = (os, repoName) => {
     if (os === "android") {
       toast({
         title: "Android Installation",
@@ -75,20 +76,20 @@ const WiFiHeader = () => {
     } else if (os === "windows") {
       toast({
         title: "Windows Installation",
-        description: `Source added to system. Run 'git clone ${sourceUrl} && cd wifi-whisperer-pro && npm install && npm run build && npm run electron:windows' in Command Prompt.`,
+        description: `Source added to system. Run 'git clone ${repoName} && cd ${repoName} && npm install && npm run build && npm run electron:windows' in Command Prompt.`,
         duration: 10000,
       });
     } else if (os === "mac") {
       toast({
         title: "Mac Installation",
-        description: `Source added. Run 'git clone ${sourceUrl} && cd wifi-whisperer-pro && npm install && npm run build && npm run electron:mac' in Terminal.`,
+        description: `Source added. Run 'git clone ${repoName} && cd ${repoName} && npm install && npm run build && npm run electron:mac' in Terminal.`,
         duration: 10000,
       });
     } else {
       // For Linux
       toast({
         title: "Linux Installation",
-        description: `Source added. Run 'git clone ${sourceUrl} && cd wifi-whisperer-pro && npm install && npm run build && npm run electron:linux' in Terminal.`,
+        description: `Source added. Run 'git clone ${repoName} && cd ${repoName} && npm install && npm run build && npm run electron:linux' in Terminal.`,
         duration: 10000,
       });
     }
