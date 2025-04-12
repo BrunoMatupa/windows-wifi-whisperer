@@ -1,4 +1,5 @@
 
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -25,10 +26,10 @@ Follow these steps:
 
 ```sh
 # Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+git clone https://github.com/lovabledev/00024f68-4223-45d0-8094-878b30279412.git wifi-whisperer-pro
 
 # Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+cd wifi-whisperer-pro
 
 # Step 3: Install the necessary dependencies.
 npm i
@@ -43,7 +44,7 @@ WiFi Whisperer Pro can be easily installed on Kali Linux. Follow these steps:
 
 ```sh
 # Clone the repository
-git clone https://github.com/your-username/wifi-whisperer-pro.git
+git clone https://github.com/lovabledev/00024f68-4223-45d0-8094-878b30279412.git wifi-whisperer-pro
 
 # Navigate to the project directory
 cd wifi-whisperer-pro
@@ -97,3 +98,4 @@ Yes it is!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
