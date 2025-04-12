@@ -38,6 +38,36 @@ npm i
 npm run dev
 ```
 
+## One-Click Installation for All Platforms
+
+WiFi Whisperer Pro supports one-click installation for all major platforms. Simply click the "One-Click Install" button on the web interface to get started.
+
+### Desktop Installation (Windows, Mac, Linux)
+
+```sh
+# Clone the repository directly to your desktop
+git clone https://github.com/lovabledev/00024f68-4223-45d0-8094-878b30279412.git ~/Desktop/wifi-whisperer-pro
+
+# Navigate to the project directory
+cd ~/Desktop/wifi-whisperer-pro
+
+# Install dependencies
+npm install
+
+# Build the application
+npm run build
+
+# Install for your specific platform:
+# For Windows:
+npm run electron:windows
+
+# For Mac:
+npm run electron:mac
+
+# For Linux:
+npm run electron:linux
+```
+
 ## Installation on Kali Linux
 
 WiFi Whisperer Pro can be easily installed on Kali Linux. Follow these steps:

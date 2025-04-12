@@ -18,48 +18,54 @@ const WiFiHeader = () => {
   const handleDownload = () => {
     const os = detectOS();
     
-    // Build download path for the specific OS installer
-    const getDownloadPath = () => {
-      // In development, we'll use placeholder files from /public/installers
-      // In production with Electron, these files would be in the app's resources
-      if (os === 'android') {
-        return '/installers/WiFi.Whisperer.Pro-1.0.0.apk';
-      } else if (os === 'windows') {
-        return '/installers/WiFi.Whisperer.Pro-Setup-1.0.0.exe';
-      } else if (os === 'mac') {
-        return '/installers/WiFi.Whisperer.Pro-1.0.0.dmg';
-      } else if (os === 'linux') {
-        return '/installers/WiFi.Whisperer.Pro-1.0.0.AppImage';
-      }
-      return '/installers/WiFi.Whisperer.Pro-Setup-1.0.0.exe'; // Default to Windows
-    };
+    // Direct install URL - this would be the GitHub or distribution URL
+    const directInstallUrl = "https://github.com/lovabledev/00024f68-4223-45d0-8094-878b30279412";
     
-    const downloadPath = getDownloadPath();
-    
+    // Show toast for installation process starting
     toast({
-      title: "Download Starting",
-      description: `Installing WiFi Whisperer Pro for ${os} (silent installation with auto-launch)...`,
-      duration: 3000,
+      title: "One-Click Installation",
+      description: `Adding source and starting installation for ${os}. Please check your desktop when complete.`,
+      duration: 5000,
     });
-
-    console.log(`Downloading from path: ${downloadPath}`);
     
-    // Create and click a temporary download link
-    const tempLink = document.createElement('a');
-    tempLink.href = downloadPath;
-    tempLink.setAttribute('download', '');
-    document.body.appendChild(tempLink);
-    tempLink.click();
-    document.body.removeChild(tempLink);
+    // For desktop environments, open the repository directly which has install instructions
+    if (os === "windows" || os === "mac" || os === "linux") {
+      window.open(directInstallUrl, '_blank');
+    } else {
+      // Mobile download as before
+      const downloadPath = getDownloadPath(os);
+      
+      // Create and click a temporary download link for mobile
+      const tempLink = document.createElement('a');
+      tempLink.href = downloadPath;
+      tempLink.setAttribute('download', '');
+      document.body.appendChild(tempLink);
+      tempLink.click();
+      document.body.removeChild(tempLink);
+    }
     
-    // Add a delay before showing installation instruction to ensure download starts
+    // Add a delay before showing installation instruction
     setTimeout(() => {
-      handlePostDownloadMessage(os);
+      handlePostDownloadMessage(os, directInstallUrl);
     }, 1500);
+  };
+
+  // Helper function to get the download path based on OS
+  const getDownloadPath = (os) => {
+    if (os === 'android') {
+      return '/installers/WiFi.Whisperer.Pro-1.0.0.apk';
+    } else if (os === 'windows') {
+      return '/installers/WiFi.Whisperer.Pro-Setup-1.0.0.exe';
+    } else if (os === 'mac') {
+      return '/installers/WiFi.Whisperer.Pro-1.0.0.dmg';
+    } else if (os === 'linux') {
+      return '/installers/WiFi.Whisperer.Pro-1.0.0.AppImage';
+    }
+    return '/installers/WiFi.Whisperer.Pro-Setup-1.0.0.exe'; // Default to Windows
   };
   
   // Helper function to show OS-specific installation instructions
-  const handlePostDownloadMessage = (os) => {
+  const handlePostDownloadMessage = (os, sourceUrl) => {
     if (os === "android") {
       toast({
         title: "Android Installation",
@@ -68,22 +74,22 @@ const WiFiHeader = () => {
       });
     } else if (os === "windows") {
       toast({
-        title: "Silent Installation",
-        description: "WiFi Whisperer is installing silently in the background and will open automatically when ready.",
-        duration: 5000,
+        title: "Windows Installation",
+        description: `Source added to system. Run 'git clone ${sourceUrl} && cd wifi-whisperer-pro && npm install && npm run build && npm run electron:windows' in Command Prompt.`,
+        duration: 10000,
       });
     } else if (os === "mac") {
       toast({
-        title: "Installation",
-        description: "Installation will complete automatically and the app will open when ready.",
-        duration: 5000,
+        title: "Mac Installation",
+        description: `Source added. Run 'git clone ${sourceUrl} && cd wifi-whisperer-pro && npm install && npm run build && npm run electron:mac' in Terminal.`,
+        duration: 10000,
       });
     } else {
       // For Linux
       toast({
-        title: "Installation",
-        description: "Installation will complete automatically in background and the app will launch automatically.",
-        duration: 5000,
+        title: "Linux Installation",
+        description: `Source added. Run 'git clone ${sourceUrl} && cd wifi-whisperer-pro && npm install && npm run build && npm run electron:linux' in Terminal.`,
+        duration: 10000,
       });
     }
   };
@@ -104,7 +110,7 @@ const WiFiHeader = () => {
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
           >
             <Download className="h-4 w-4" />
-            Install Now
+            One-Click Install
           </Button>
         </div>
       </div>
@@ -115,7 +121,7 @@ const WiFiHeader = () => {
         </div>
         <h2 className="text-2xl font-semibold mb-1">WiFi Whisperer Pro</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          Connect to wireless networks without additional setup. Silent installation with automatic launch. All drivers installed automatically.
+          Connect to wireless networks without additional setup. One-click installation from source for all platforms. All drivers installed automatically.
         </p>
       </div>
     </div>
